@@ -8,7 +8,7 @@
 
 using namespace std;
 
-class CppThread { 					//create a thread wrapper for futhur use
+class CppThread { 					//create a thread wrapper for future use
 
 public:
 	inline void start() {
