@@ -1,3 +1,17 @@
+/*
+This cpp file is used for testing the functionality of the interaction between client with motor & rfid reader,  and server with traffic signal .
+
+Usage:
+1. install g++
+2. Create static library by: *MAKE SURE that CMFRC522 is in the same directory with RFID_test*
+    g++ -c CMFRC522.cpp
+    ar rcs CMFRC522.a CMFRC522.o
+3.  Complie:
+    g++ motorclient.cpp -o motorclient -lpigpio -lrt -lpthread -L. -l:CMFRC522.a
+4. Run:
+    sudo ./motorclient
+
+*/
 #include <iostream>
 #include <fstream>
 #include <cstring>
