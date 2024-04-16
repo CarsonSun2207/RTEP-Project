@@ -29,7 +29,7 @@ using namespace std;
 
 
 //Global constant for I2C address on PCA9685 
-const int PCA9685_ADDR = 0x40;
+const int PCA9685_ADDR = 0x40;				//define the PCA9685 communication and activate i2c through pigpio
 class PCA9685 {
 private:
     int i2cHandle;
@@ -37,14 +37,14 @@ private:
 public:
     PCA9685(int handle) : i2cHandle(handle) {}
 
-    void setup() {
+    void setup() {					//setup and initialize the i2c communication
         i2cWriteByteData(i2cHandle, 0x00, 0x20);
         int freq = 1000;
         int prescale = (25000000 / (4096 * freq)) - 1;
         i2cWriteByteData(i2cHandle, 0xFE, prescale); // Set PWM frequency to 1000 Hz
     }
 
-    void setPWM(int channel, int on, int off) {
+    void setPWM(int channel, int on, int off) {		//set a function to write information via i2C
         int regBase = 0x06 + 4 * channel;
         i2cWriteByteData(i2cHandle, regBase, on & 0xFF);
         i2cWriteByteData(i2cHandle, regBase + 1, on >> 8);
@@ -59,7 +59,7 @@ private:
 public:
     Motor(PCA9685& pcaController) : pca(pcaController) {}
 
-    void Forward() {
+    void Forward() {			// set the parameters for different motion control
         pca.setPWM(0, 0, 0);
         pca.setPWM(1, 1024, 0);
         pca.setPWM(3, 0, 0);
@@ -115,12 +115,7 @@ public:
     }
 };
 
-// Callback function to handle GPIO interrupt
-void gpioInterruptHandler(int gpio, int level, uint32_t tick) {
-    cout << "Interrupt detected on GPIO " << gpio << endl;
-}
-
-class CppThread {
+class CppThread { 		//thread wrapper for future use 
 
 public:
 	inline void start() {
@@ -140,7 +135,7 @@ private:
 };
 
 
-class Client{
+class Client{			
     private:
         
         char* rdmsg =new char {5};
@@ -154,10 +149,10 @@ class Client{
     int sock;
     int flag;
     int bytesRead;
-    int byte_rd(){ return read(sock,rdmsg,5);};   
+    int byte_rd(){ return read(sock,rdmsg,5);};   //Read the byte number of the message in socket
  
 
-    void setupSocket(const std::string& host, int port) {
+    void setupSocket(const std::string& host, int port) {  //setup socket connection with server by host address and port number
     sock = socket(AF_INET, SOCK_STREAM, 0);
     std::cout<<"I am here in setupsocket"<<std::endl;
     if (sock < 0) {
@@ -184,7 +179,7 @@ class Client{
     
     }
 
-    void sendmsg() {
+    void sendmsg() { 						//function to send message depending on whether the car has entered or exited the zone
         if (flag==0)
         {
             send(sock, entermsg,strlen(entermsg), 0);
@@ -194,7 +189,7 @@ class Client{
         //std::cout<<"Notified Server!!"<<std::endl;
 
     }
-     bool sigiden() {
+     bool sigiden() {							//function to identify signal sent by server and recreate one for client
         if(strcmp(rdmsg,"RED  ")==0)
         {
             sig=0;
@@ -210,7 +205,7 @@ class Client{
     return sig;           
     }
 
-    void readsig(){
+    void readsig(){							 //Function to read data and handle error
         
         std::cout<<"Reading data..."<<std::endl;
         memset(rdmsg, 0, 5);
@@ -238,7 +233,7 @@ class Client{
 
 }
 };
-
+//RFIDDetection Thread: to detect whether car is present and store the message into a character array get_id[16]
 class RFIDThread : public CppThread {
 
 private:
@@ -261,12 +256,12 @@ public:
             mfrc522.RC522_Anticoll(mfrc522._id);
             for (uint8_t i = 0; i < 8; i++) {
                 get_id[i]= mfrc522._id[i];
-                std::cout<<std::hex<<int(mfrc522._id[i])<<" ";
+                std::cout<<std::hex<<int(mfrc522._id[i])<<" "; //print out the result
             }
           std::cout<<endl;
         }
 
-        if(get_id[2]==enter_id)
+        if(get_id[2]==enter_id)				// store boolean value flag in class client by 0or 1 depending on the get_id from rfid card(exter-enter_id or exit-exit_id 
         {
             clie.flag=0;
             std::cout<<"Entered Crossing!!"<<std::endl;
@@ -287,7 +282,7 @@ RFIDThread(Client& client) : clie(client){}
 };
 
 
-class Readingmsg: public CppThread {
+class Readingmsg: public CppThread { //Thread Class to read the data depending on the number of byte reea, that is not equal to 0
     private:
     Client& clie;
 
@@ -307,7 +302,8 @@ class Readingmsg: public CppThread {
     Readingmsg(Client& Clie):clie(Clie){};
 };
 
-class Motioncntrl: public CppThread {
+class Motioncntrl: public CppThread {	// Thread to implement the start and stop motion of the motor depending on the received signal by server (referred as clie.sigden())
+    
     private:
     Client& clie;
     Motor& mot;
@@ -331,9 +327,9 @@ class Motioncntrl: public CppThread {
 
 int main(){
     const char host []= "192.168.1.132";//change the ip address of the server if required
-    int port = 5560;
+    int port = 5560;// make sure the same port is used in server
     Client client;
-    client.setupSocket(host, port);
+    client.setupSocket(host, port);// create class 
     if(gpioInitialise()<0){
         std::cout<<"Pigpio initialization failed"<<std::endl;
         return 1;
@@ -353,7 +349,7 @@ int main(){
     Motioncntrl motctl(client, motor);
     if (client.sock < 0) return -1;
     
-    rfidrd.start();
+    rfidrd.start(); //start and stop threads
     rdingmsg.start();
     motctl.start();
     rfidrd.join();
