@@ -145,13 +145,13 @@ class Client{
 
 }
 };
-  //RFIDDetection Thread: to detect whether car is present and store the message into a character array get_id[16]
+  //RFIDDetection Thread: to detect whether car is present and store the message into a character array get_id[8]
 class RFIDThread : public CppThread {                            
                                                                     
 private:
 	// implement run which is doing all the work
     Client& clie;
-	unsigned char get_id[16];
+	unsigned char get_id[8];
     int enter_id = 68 ;
     int exit_id = 189 ;
 
@@ -166,9 +166,9 @@ public:
         if (mfrc522.isNewCardPresent()==0) { // Detect whether a new card is present
             std::cout << "Card Detected/n The card id is:" << std::endl;
             mfrc522.RC522_Anticoll(mfrc522._id);
-            for (uint8_t i = 0; i < 8; i++) {                  //print out the result
-                get_id[i]= mfrc522._id[i];
-                std::cout<<std::hex<<int(mfrc522._id[i])<<" ";
+            for (uint8_t i = 0; i < 8; i++) {                  
+                get_id[i]= mfrc522._id[i];		//store the read msg to get_id[8]
+                std::cout<<std::hex<<int(mfrc522._id[i])<<" ";//print out the result
             }
           std::cout<<endl;
         }
@@ -194,7 +194,7 @@ RFIDThread(Client& client) : clie(client){}
 };
 
 
-class Readingmsg: public CppThread { Thread Class to read the data depending on the number of byte reea, that is not equal to 0
+class Readingmsg: public CppThread { //Thread Class to read the data depending on the number of byte reea, that is not equal to 0
     private:
     Client& clie;
 
