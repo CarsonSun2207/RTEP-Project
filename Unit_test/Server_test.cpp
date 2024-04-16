@@ -8,7 +8,7 @@
 
 using namespace std;
 
-class CppThread {
+class CppThread { 					//create a thread wrapper for futhur use
 
 public:
 	inline void start() {
@@ -27,7 +27,7 @@ private:
 	std::thread uthread;
 };
 
-class Server{
+class Server{				// server class function to deal with the 
 private:
     char bff[13] ={0};
     char* rddmsg[13]={0};
@@ -37,10 +37,10 @@ public:
     int clt_soc;
 
     int byteno(){
-        return read(clt_soc, bff,12);
+        return read(clt_soc, bff,12);	//read the number of bytes from socket
     }
     
-    void setupServer(int& server_fd, struct sockaddr_in& address, int port) {
+    void setupServer(int& server_fd, struct sockaddr_in& address, int port) { //setup server by server ip address & port number
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
         std::cout<<"Socket creation failed"<<std::endl;
         exit(EXIT_FAILURE);
@@ -67,7 +67,7 @@ public:
         exit(EXIT_FAILURE);
     }}
 
-    void acceptConnection(int server_fd, struct sockaddr_in& address) {
+    void acceptConnection(int server_fd, struct sockaddr_in& address) {		// accept the connection request from client in the socket-clt_soc
     int addrlen = sizeof(address);
      clt_soc = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen);
     std::cout<<"after socket accept"<<endl;
@@ -79,7 +79,7 @@ public:
 
     }
 
-    char* readctmsg(){
+    char* readctmsg(){								//read the message sent from client and store it in the character array pointer buffer
         char* buffer = new char[bffsize];
         memset(buffer, 0, bffsize);
         ssize_t bytesRead = read(clt_soc,buffer,bffsize);
@@ -100,7 +100,7 @@ public:
         }
     }
 
-    void sendtrafsig(bool tfsig){
+    void sendtrafsig(bool tfsig){			//send traffic signal to client depending on the signal , which is altered by the thread Trafficsig
         char tfmsg[6]={0} ;
         if (tfsig==0)
         {
@@ -117,7 +117,7 @@ public:
 };
 
 
-class Readmsg: public CppThread{
+class Readmsg: public CppThread{  // thread keep reading the message from the client 
     private:
 
     Server& ser; 
@@ -126,18 +126,17 @@ class Readmsg: public CppThread{
                 
 
         while(1)
-        {   if(ser.byteno()!=0)
+        {   if(ser.byteno()!=0) //detect whether there is message
             {
             
-            strcpy(rdmsg, ser.readctmsg());
-            std::cout<<rdmsg<<std::endl;
+            strcpy(rdmsg, ser.readctmsg()); //copy the msg to the public character array rdmsg
+            std::cout<<rdmsg<<std::endl; //prinout the msg
 
-            if (rdmsg[3]=='n'){
+            if (rdmsg[3]=='n'){ // detect whether the 3rd element of rdmsg is 'n', which comes from the message "Entered" 
                trigger=1; 
-            }else if(rdmsg[3]=='x')
+            }else if(rdmsg[3]=='x') // detect whether the 3rd element of rdmsg is 'x', which comes from the message "Entered" 
             {   
                 trigger=0;
-                std::cout<<"Server Stopped sending signal to "<<carno<<std::endl;
             }        
         
         }
@@ -150,13 +149,13 @@ bool trigger;
 char rdmsg[9]={0};
 };
 
-class Trafficsig: public CppThread{
+class Trafficsig: public CppThread{ // thread that generates the traffic light signal
  private:
     Readmsg& rdmsg;
     Server& ser;
     bool num;
 
- void run(){
+ void run(){		// generates the traffic light signal num , starting from 0
      num = 0;
     while(1){
         if(strcmp(rdmsg.rdmsg,"Entered")==0)
