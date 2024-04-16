@@ -179,7 +179,7 @@ class Client{
     
     }
 
-    void sendmsg() { 						//function to send message depending on whether the car has entered or exited the zone
+    void sendmsg() { 						//function to send a message depending on whether the car has entered or exited the zone
         if (flag==0)
         {
             send(sock, entermsg,strlen(entermsg), 0);
@@ -189,7 +189,7 @@ class Client{
         //std::cout<<"Notified Server!!"<<std::endl;
 
     }
-     bool sigiden() {							//function to identify signal sent by server and recreate one for client
+     bool sigiden() {							//function to identify signal sent by the server and recreate one for client
         if(strcmp(rdmsg,"RED  ")==0)
         {
             sig=0;
@@ -261,7 +261,7 @@ public:
           std::cout<<endl;
         }
 
-        if(get_id[2]==enter_id)				// store boolean value flag in class client by 0or 1 depending on the get_id from rfid card(exter-enter_id or exit-exit_id 
+        if(get_id[2]==enter_id)				// store boolean value flag in class client by 0 or 1 depending on the get_id from rfid card(exter-enter_id or exit-exit_id 
         {
             clie.flag=0;
             std::cout<<"Entered Crossing!!"<<std::endl;
@@ -282,7 +282,7 @@ RFIDThread(Client& client) : clie(client){}
 };
 
 
-class Readingmsg: public CppThread { //Thread Class to read the data depending on the number of byte reea, that is not equal to 0
+class Readingmsg: public CppThread { //Thread Class to read the data depending on the number of byte read, that is not equal to 0
     private:
     Client& clie;
 
@@ -302,7 +302,7 @@ class Readingmsg: public CppThread { //Thread Class to read the data depending o
     Readingmsg(Client& Clie):clie(Clie){};
 };
 
-class Motioncntrl: public CppThread {	// Thread to implement the start and stop motion of the motor depending on the received signal by server (referred as clie.sigden())
+class Motioncntrl: public CppThread {	// Thread to implement the start and stop the motion of the motor depending on the received signal by server (referred as clie.sigden())
     
     private:
     Client& clie;
